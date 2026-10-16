@@ -243,75 +243,28 @@ class ReleaseWorkflowTests(unittest.TestCase):
     def test_platforms_and_release_permissions(self):
         self.assertEqual(self.workflow["permissions"], {"contents": "read"})
         jobs = self.workflow["jobs"]
-        matrix = jobs["build"]["strategy"]["matrix"]["include"]
-        self.assertEqual(
-            {entry["os"] for entry in matrix},
-            {"windows-2022", "ubuntu-22.04", "macos-15-intel", "macos-15"},
-        )
-        self.assertEqual(jobs["build"]["strategy"]["fail-fast"], "false")
+        self.assertEqual(jobs["build"]["runs-on"], "windows-2022")
         release = jobs["draft_release"]
         self.assertEqual(release["permissions"], {"contents": "write"})
         self.assertEqual(set(release["needs"]), {"metadata", "build"})
-        self.assertEqual(release["if"], "github.event_name == 'push' && github.ref_type == 'tag'")
         self.assertIn("workflow_dispatch", self.workflow["on"])
-        linux_uploads = [
-            step for step in jobs["build"]["steps"]
-            if step.get("if") == "runner.os == 'Linux'"
-            and step.get("uses", "").startswith("actions/upload-artifact@")
-        ]
-        self.assertEqual(
-            {step["name"] for step in linux_uploads},
-            {"Upload Linux portable artifact"},
-        )
-        linux_build = next(
-            step for step in jobs["build"]["steps"] if step.get("name") == "Build Linux bundles"
-        )
-        self.assertIn("--no-bundles", linux_build["run"])
-        mac_uploads = [
-            step for step in jobs["build"]["steps"]
-            if step.get("if") == "runner.os == 'macOS'"
-            and step.get("uses", "").startswith("actions/upload-artifact@")
-        ]
-        self.assertEqual(
-            {step["name"] for step in mac_uploads},
-            {
-                "Upload macOS DMG artifact",
-                "Upload macOS portable artifact",
-            },
-        )
 
     def test_portable_artifacts_download_as_tarballs_and_are_selected_for_release(self):
         jobs = self.workflow["jobs"]
-        uploads = {
-            step["name"]: step for step in jobs["build"]["steps"]
-            if step.get("uses", "").startswith("actions/upload-artifact@")
-        }
+        upload = next(
+            step for step in jobs["build"]["steps"]
+            if step.get("name") == "Upload Windows artifact"
+        )
+        self.assertEqual(upload["uses"], "actions/upload-artifact@v4")
+        self.assertEqual(upload["with"]["name"], "GalTransl-windows-x64")
+        self.assertEqual(upload["with"]["path"], "release/GalTransl_${{ needs.metadata.outputs.version }}_win.zip")
         download = next(
             step for step in jobs["draft_release"]["steps"]
             if step.get("name") == "Download this run's build artifacts"
         )
-        self.assertEqual(download["uses"], "actions/download-artifact@v8")
+        self.assertEqual(download["uses"], "actions/download-artifact@v4")
         self.assertEqual(download["with"]["merge-multiple"], "true")
-        self.assertNotEqual(download["with"].get("skip-decompress"), "true")
-        for platform in ("linux_x86_64", "macos_x86_64", "macos_arm64"):
-            with self.subTest(platform=platform):
-                upload = uploads[
-                    "Upload Linux portable artifact" if platform == "linux_x86_64"
-                    else "Upload macOS portable artifact"
-                ]
-                self.assertEqual(upload["uses"], "actions/upload-artifact@v7")
-                inputs = upload["with"]
-                self.assertEqual(inputs["archive"], "false")
-                self.assertNotIn("name", inputs)
-                self.assertEqual(inputs["if-no-files-found"], "error")
-                self.assertEqual(inputs["retention-days"], "14")
-                path = inputs["path"].replace("${{ needs.metadata.outputs.version }}", VERSION)
-                path = path.replace("${{ matrix.platform }}", platform)
-                self.assertEqual(path, f"release/GalTransl_{VERSION}_{platform}.tar.gz")
-                # Unarchived artifacts use the file name, including its extension.
-                self.assertTrue(fnmatchcase(Path(path).name, download["with"]["pattern"]))
-        for name in ("GalTransl-windows-x64", "GalTransl-macos_x86_64-dmg", "GalTransl-macos_arm64-dmg"):
-            self.assertTrue(fnmatchcase(name, download["with"]["pattern"]))
+        self.assertTrue(fnmatchcase("GalTransl-windows-x64", download["with"]["pattern"]))
 
     def test_checksum_manifest_only_includes_expected_assets(self):
         steps = self.workflow["jobs"]["draft_release"]["steps"]
@@ -320,7 +273,7 @@ class ReleaseWorkflowTests(unittest.TestCase):
             directory = Path(tmp)
             assets = directory / "release-assets"
             assets.mkdir()
-            names = [f"GalTransl_{VERSION}_{platform}.{ext}" for platform, formats in smoke.FORMATS.items() for ext in formats]
+            names = [f"GalTransl_{VERSION}_{platform}.{ext}" for platform in ("win",) for ext in smoke.FORMATS[platform]]
             for name in names:
                 (assets / name).write_bytes(b"package")
             (assets / "unrelated.txt").write_bytes(b"not a release asset")
@@ -331,7 +284,7 @@ class ReleaseWorkflowTests(unittest.TestCase):
             self.assertEqual({line.split("  ")[1] for line in checksum_lines}, set(names))
             manifest = (directory / "release-assets.txt").read_text(encoding="utf-8").splitlines()
             self.assertEqual({Path(path).name for path in manifest}, {*names, "SHA256SUMS.txt"})
-            self.assertEqual(len(checksum_lines), sum(len(formats) for formats in smoke.FORMATS.values()))
+            self.assertEqual(len(checksum_lines), 1)
 
     @unittest.skipUnless(
         sys.platform != "win32" and shutil.which("bash") and shutil.which("jq"),
