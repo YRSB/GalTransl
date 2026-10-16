@@ -545,10 +545,7 @@ export function NewProjectWizard({ active, onProjectNameChange, onOpenProject }:
   const handleFinish = useCallback(() => {
     if (!projectDir) return;
     onOpenProject(projectDir, 'config.yaml');
-    addProjectToHistory(projectDir, 'config.yaml');
-    const projectId = encodeProjectDir(projectDir);
-    navigate(`/project/${projectId}/translate`);
-  }, [projectDir, navigate, onOpenProject]);
+  }, [projectDir, onOpenProject]);
 
   // 「下一步」本身会完成创建项目 / 保存设置，不再要求先点单独的按钮
   const canNext = useMemo(() => {

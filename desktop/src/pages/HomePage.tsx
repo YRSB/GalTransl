@@ -48,7 +48,11 @@ function loadHistory(limit = getHomeHistoryRetentionLimit()): ProjectHistoryEntr
 }
 
 function saveHistory(entries: ProjectHistoryEntry[]) {
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(entries));
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(entries));
+  } catch {
+    // ignore storage errors
+  }
 }
 
 function getJobSortTimestamp(job: Job): number {

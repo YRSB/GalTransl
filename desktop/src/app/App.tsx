@@ -216,7 +216,9 @@ function AppInner({ openProjects, onOpenProject, onCloseProject, onCloseOtherPro
     onOpenProject(projectDir, config);
     setWizardOpen(false);
     setWizardProjectName('');
-  }, [onOpenProject]);
+    const projectId = encodeProjectDir(projectDir);
+    navigate(`/project/${projectId}/translate`);
+  }, [onOpenProject, navigate]);
   // Cross-fade: the outgoing page stays mounted on top while the new page
   // fades in underneath — no serial "wait for fadeOut, then mount" delay.
   const [leavingPath, setLeavingPath] = useState<string | null>(null);

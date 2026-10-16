@@ -206,3 +206,54 @@ test('retained pages outside the recent window remain mounted until released', (
   assert.ok(f.page(busyCount - 1));
   f.dispose();
 });
+
+test('wizard finish unmounts wizard and navigates to target project', () => {
+  const encodeProjectDir = (dir) => Buffer.from(dir).toString('base64url');
+  let navigate;
+  let openedProject = null;
+  function Wizard({ onOpenProject }) {
+    return h('button', {
+      id: 'finish-btn',
+      onClick: () => onOpenProject('C:/Games/TestProject', 'config.yaml'),
+    }, 'Finish');
+  }
+
+  function App() {
+    const location = useLocation();
+    navigate = useNavigate();
+    const [wizardOpen, setWizardOpen] = useState(location.pathname === '/new-project');
+    const [wizardProjectName, setWizardProjectName] = useState('');
+
+    useEffect(() => {
+      if (location.pathname === '/new-project') setWizardOpen(true);
+    }, [location.pathname]);
+
+    const handleFinishWizard = (projectDir, config) => {
+      openedProject = projectDir;
+      setWizardOpen(false);
+      setWizardProjectName('');
+      const projectId = encodeProjectDir(projectDir);
+      navigate(`/project/${projectId}/translate`);
+    };
+
+    return h('div', null,
+      wizardOpen ? h(Wizard, { onOpenProject: handleFinishWizard }) : null,
+      h('span', { id: 'current-path' }, location.pathname),
+    );
+  }
+
+  let renderer;
+  act(() => {
+    renderer = create(h(MemoryRouter, { initialEntries: ['/new-project'] }, h(App)));
+  });
+
+  const btn = renderer.root.findByProps({ id: 'finish-btn' });
+  act(() => {
+    btn.props.onClick();
+  });
+
+  assert.equal(openedProject, 'C:/Games/TestProject');
+  assert.equal(renderer.root.findAllByType('button').length, 0);
+  const pathNode = renderer.root.findByProps({ id: 'current-path' });
+  assert.match(pathNode.children[0], /^\/project\/[^/]+\/translate$/);
+});
