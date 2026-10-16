@@ -3,9 +3,9 @@ import { useConnection } from './ConnectionContext';
 import { StartupSplash } from './StartupSplash';
 
 /** 淡出时长，需与 styles/components/startup-splash.css 里的过渡时长保持一致 */
-const FADE_OUT_MS = 420;
+const FADE_OUT_MS = 220;
 /** 最短展示时长：后端秒连时也让 splash 完整出现一次，避免界面闪一下 */
-const MIN_VISIBLE_MS = 700;
+const MIN_VISIBLE_MS = 150;
 
 /**
  * 主界面之外的启动闸门。

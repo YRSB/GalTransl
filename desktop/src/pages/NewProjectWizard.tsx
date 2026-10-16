@@ -471,10 +471,14 @@ export function NewProjectWizard({ active, onProjectNameChange, onOpenProject }:
 
   // ── Step 5: Auto-extract names on entry ──
   useEffect(() => {
-    if (currentStep !== 4 || nameJobStatus !== 'idle' || !projectDir) return;
+    if (currentStep !== 4 || nameJobStatus !== 'idle' || !projectDir) return undefined;
+
+    let cancelled = false;
+    let timer: number | undefined;
 
     const run = async () => {
       try {
+        if (cancelled) return;
         setNameJobStatus('running');
         // 空输入目录就直接给友好提示，不提交 dump-name 任务。判断以 gt_input 里的实际文件为准：
         // 文件可能是用户直接打开目录粘贴进去的（不经向导导入），只看 importedFiles 会误判成空
@@ -485,6 +489,7 @@ export function NewProjectWizard({ active, onProjectNameChange, onOpenProject }:
         } catch {
           hasInputFiles = true;
         }
+        if (cancelled) return;
         if (!hasInputFiles) {
           setNameJobStatus('completed');
           setNameJobMessage(uiMessage("projects:newProjectWizard.run_setNameJobMessage_gtInputEmptyFileDoneNameTableExtract"));
@@ -496,10 +501,13 @@ export function NewProjectWizard({ active, onProjectNameChange, onOpenProject }:
           config_file_name: 'config.yaml',
           translator: 'dump-name',
         });
+        if (cancelled) return;
 
         const poll = async () => {
+          if (cancelled) return;
           try {
             const status = await fetchJob(job.job_id);
+            if (cancelled) return;
             if (status.status === 'completed') {
               setNameJobStatus('completed');
               setNameJobMessage(status.success ? uiMessage("projects:newProjectWizard.poll_setNameJobMessage_nameTableExtractComplete") : uiMessage("projects:newProjectWizard.poll_setNameJobMessage_extractComplete", { value: status.error || '' }));
@@ -507,19 +515,30 @@ export function NewProjectWizard({ active, onProjectNameChange, onOpenProject }:
               setNameJobStatus('failed');
               setNameJobMessage(status.error || uiMessage("projects:newProjectWizard.poll_setNameJobMessage_extractFailed"));
             } else {
-              setTimeout(poll, 2000);
+              timer = window.setTimeout(poll, 2000);
             }
           } catch {
-            setTimeout(poll, 3000);
+            if (!cancelled) {
+              timer = window.setTimeout(poll, 3000);
+            }
           }
         };
         poll();
       } catch (err) {
-        setNameJobStatus('failed');
-        setNameJobMessage(err instanceof Error ? err.message : String(err));
+        if (!cancelled) {
+          setNameJobStatus('failed');
+          setNameJobMessage(err instanceof Error ? err.message : String(err));
+        }
       }
     };
     run();
+
+    return () => {
+      cancelled = true;
+      if (timer !== undefined) {
+        window.clearTimeout(timer);
+      }
+    };
     // eslint-disable-next-line react-hooks/react-hooks
   }, [currentStep]); // intentionally only depend on currentStep
 

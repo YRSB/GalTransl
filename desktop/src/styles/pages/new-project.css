@@ -36,7 +36,6 @@
   position: sticky;
   top: var(--space-4);
   height: fit-content;
-  backdrop-filter: blur(8px);
 }
 
 .wizard-step {
@@ -347,7 +346,6 @@
   border-radius: var(--radius-card);
   background: var(--color-surface);
   box-shadow: var(--shadow-panel);
-  backdrop-filter: blur(8px);
 }
 
 /* ── Drop zone (Step 2) ── */

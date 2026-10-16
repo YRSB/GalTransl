@@ -9,9 +9,9 @@
   padding: 12px 14px 12px 14px;
   border-radius: 16px;
   border: 1px solid rgba(191, 208, 226, 0.6);
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: saturate(160%) blur(22px);
-  -webkit-backdrop-filter: saturate(160%) blur(22px);
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   box-shadow:
     0 22px 40px -18px rgba(15, 23, 42, 0.35),
     0 6px 14px -6px rgba(15, 23, 42, 0.18),
@@ -174,12 +174,10 @@
   0% {
     opacity: 0;
     transform: translate3d(0, -14px, 0) scale(0.96);
-    filter: blur(4px);
   }
   100% {
     opacity: 1;
     transform: translate3d(0, 0, 0) scale(1);
-    filter: blur(0);
   }
 }
 
@@ -206,7 +204,7 @@
 
 :root[data-theme='dark'] .inline-alert {
   border-color: rgba(65, 83, 111, 0.82);
-  background: rgba(20, 29, 41, 0.82);
+  background: rgba(20, 29, 41, 0.96);
   box-shadow:
     0 24px 42px -18px rgba(4, 8, 14, 0.56),
     0 8px 16px -8px rgba(4, 8, 14, 0.36),

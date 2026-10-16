@@ -419,16 +419,19 @@ export function HomePage({ onOpenProject }: HomePageProps) {
     }
   }, [jobMemoryLimit, shouldLoadJobProgress]);
 
+  const hasActiveJobs = jobs.some((job) => job.status === 'pending' || job.status === 'running');
+
   useEffect(() => {
     if (!active) return;
     void refreshJobs();
+    const intervalMs = hasActiveJobs ? 3000 : 8000;
     const poller = window.setInterval(() => {
       if (!document.hidden) {
         void refreshJobs(true);
       }
-    }, 3000);
+    }, intervalMs);
     return () => window.clearInterval(poller);
-  }, [refreshJobs, active]);
+  }, [refreshJobs, active, hasActiveJobs]);
 
   useEffect(() => {
     if (!active || !shouldLoadJobProgress) {

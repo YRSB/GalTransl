@@ -282,7 +282,6 @@
   min-width: 240px;
   padding: var(--space-4);
   background: rgba(255, 255, 255, 0.97);
-  backdrop-filter: blur(14px);
   border: 1px solid rgba(191, 208, 226, 0.9);
   border-radius: var(--radius-card);
   box-shadow:

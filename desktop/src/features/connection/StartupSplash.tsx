@@ -39,22 +39,22 @@ export function StartupSplash({ phase, message, step, leaving, onRetry, onSkip }
   const offline = phase === 'offline';
 
   useEffect(() => {
-    if (phase !== 'connecting') {
+    if (phase !== 'connecting' || leaving) {
       return undefined;
     }
     let timer: number | undefined;
-    // 计时数字要 1.2s 后才显示：在那之前不启动轮询，别让启动屏每秒重渲染 5 次
+    // 计时数字要 1.2s 后才显示：在那之前不启动轮询，每秒刷新一次即可降低重绘开销
     const delay = window.setTimeout(() => {
       setElapsedMs(Date.now() - startedAtRef.current);
       timer = window.setInterval(() => {
         setElapsedMs(Date.now() - startedAtRef.current);
-      }, 200);
+      }, 1000);
     }, ELAPSED_VISIBLE_AFTER_MS);
     return () => {
       window.clearTimeout(delay);
       if (timer !== undefined) window.clearInterval(timer);
     };
-  }, [phase]);
+  }, [phase, leaving]);
 
   const showElapsed = !offline && elapsedMs >= ELAPSED_VISIBLE_AFTER_MS;
 
@@ -97,7 +97,7 @@ export function StartupSplash({ phase, message, step, leaving, onRetry, onSkip }
               <div className="startup-splash__progress-text">
                 <p className="startup-splash__message">{message}</p>
                 {showElapsed ? (
-                  <p className="startup-splash__elapsed">{translate("common:startupSplash.startupSplashProgressText_message_doneWaitSeconds", { value: (elapsedMs / 1000).toFixed(1) })}</p>
+                  <p className="startup-splash__elapsed">{translate("common:startupSplash.startupSplashProgressText_message_doneWaitSeconds", { value: Math.round(elapsedMs / 1000) })}</p>
                 ) : null}
               </div>
             </div>

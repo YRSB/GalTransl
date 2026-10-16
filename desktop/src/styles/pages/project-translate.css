@@ -1,31 +1,4 @@
-/* ── Project Layout ── */
-
-.project-layout {
-  display: flex;
-  flex-direction: column;
-  min-height: 100%;
-  height: 100%;
-  min-width: 0;
-}
-
-.project-layout > .project-dictionary-page,
-.project-layout > .project-cache-page,
-.project-layout > .project-config-page,
-.project-layout > .name-page,
-.project-layout > .ptv2-page,
-.project-layout > .project-layout__keep-alive,
-.project-layout > .project-layout__keep-alive > .project-cache-page,
-.project-layout > .project-layout__keep-alive > .name-page {
-  flex: 1;
-  min-height: 0;
-}
-
-/* Keep-alive wrapper must itself be a flex column so the inner page can fill height. */
-.project-layout__keep-alive {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
+/* ── Project Translate Page (Event log, folder dropdown, launch animations) ── */
 
 .form-row {
   display: flex;
@@ -50,18 +23,6 @@
 
 .project-translate-page {
   position: relative;
-}
-
-.project-translate-page::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at top right, rgba(47, 111, 235, 0.12), transparent 26%),
-    radial-gradient(circle at 20% 15%, rgba(15, 157, 88, 0.1), transparent 24%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.48), rgba(255, 255, 255, 0));
-  z-index: 0;
 }
 
 .project-translate-page__header-row {
@@ -100,7 +61,6 @@
   border-radius: var(--radius-control);
   border: 1px solid rgba(191, 208, 226, 0.9);
   background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(14px);
   box-shadow:
     0 14px 28px rgba(16, 24, 40, 0.12),
     0 4px 8px rgba(16, 24, 40, 0.06);
@@ -1334,13 +1294,6 @@
   pointer-events: none;
   animation: launchParticle 0.7s ease-out forwards;
   z-index: 10;
-}
-
-:root[data-theme='dark'] .project-translate-page::before {
-  background:
-    radial-gradient(circle at top right, rgba(67, 129, 255, 0.2), transparent 28%),
-    radial-gradient(circle at 20% 15%, rgba(65, 194, 132, 0.14), transparent 26%),
-    linear-gradient(180deg, rgba(12, 18, 28, 0.5), rgba(12, 18, 28, 0));
 }
 
 :root[data-theme='dark'] .project-translate-page .panel {

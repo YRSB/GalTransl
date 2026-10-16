@@ -15,12 +15,16 @@
     radial-gradient(circle at 24% 16%, var(--bg-glow-primary), transparent 46%),
     radial-gradient(circle at 78% 82%, var(--bg-glow-success), transparent 44%),
     linear-gradient(180deg, var(--bg-gradient-top) 0%, var(--color-bg) 46%, var(--bg-gradient-bottom) 100%);
-  transition: opacity 420ms var(--ease-decel);
+  transition: opacity 220ms var(--ease-decel);
 }
 
 .startup-splash--leaving {
   opacity: 0;
   pointer-events: none;
+}
+
+.startup-splash--leaving * {
+  animation-play-state: paused !important;
 }
 
 /* ── 背景光斑（缓慢漂移，纯装饰） ── */
@@ -30,7 +34,6 @@
   width: 460px;
   height: 460px;
   border-radius: 50%;
-  filter: blur(28px);
   opacity: 0.55;
   pointer-events: none;
   animation: startupGlowDrift 16s var(--ease-default) infinite alternate;
@@ -72,8 +75,6 @@
   border-radius: var(--radius-panel);
   background: var(--color-surface);
   box-shadow: var(--shadow-panel);
-  -webkit-backdrop-filter: blur(18px);
-  backdrop-filter: blur(18px);
   animation: startupCardIn 460ms var(--ease-decel) both;
 }
 

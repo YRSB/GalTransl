@@ -24,7 +24,7 @@
 .app-layout__page:has(.home-page)::before {
   content: '';
   position: absolute;
-  inset: -120px -80px -120px;
+  inset: 0;
   background:
     radial-gradient(circle at 8% 10%, rgba(25, 140, 255, 0.12), transparent 42%),
     radial-gradient(circle at 90% 18%, rgba(34, 211, 238, 0.14), transparent 44%),
@@ -116,6 +116,8 @@
   gap: var(--space-5);
   position: relative;
   z-index: 1;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .home-hero__stat {

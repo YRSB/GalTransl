@@ -303,8 +303,7 @@
   align-items: center;
   justify-content: center;
   padding: var(--space-6);
-  background: rgba(16, 24, 40, 0.35);
-  backdrop-filter: blur(4px);
+  background: rgba(16, 24, 40, 0.45);
   z-index: 50;
   animation: dictDialogFadeIn 160ms var(--ease-default, ease-out);
 }
