@@ -27,7 +27,7 @@ function fixture() {
   };
 }
 
-test('history jumps immediately; only new translations start smooth following', () => {
+test('history jumps immediately; new translations follow without animation loop', () => {
   const f = fixture();
   assert.equal(f.viewport.scrollTop, 600);
   assert.equal(f.calls[0].behavior, 'auto');
@@ -35,12 +35,12 @@ test('history jumps immediately; only new translations start smooth following', 
   assert.equal(f.calls.length, 1);
   f.viewport.scrollHeight = 1400;
   f.tail.update('new', true);
-  assert.equal(f.calls.at(-1).behavior, 'smooth');
-  f.scroll(700);
-  f.scroll(850);
+  assert.equal(f.calls.at(-1).behavior, 'auto');
+  assert.equal(f.viewport.scrollTop, 1000);
   f.viewport.scrollHeight = 1600;
   f.tail.update('newer', true);
   assert.equal(f.calls.at(-1).top, 1600);
+  assert.equal(f.viewport.scrollTop, 1200);
   assert.equal(f.calls.length, 3);
 });
 
@@ -49,10 +49,9 @@ test('100-row window compensates for head removal and keeps following', () => {
   // Native scroll anchoring moves the viewport up when old rows are removed.
   f.viewport.scrollTop = 200;
   f.tail.update('next-window', true);
-  f.scroll(200); // Queued layout scroll event must not count as user input.
-  f.scroll(400);
+  assert.equal(f.viewport.scrollTop, 600);
   f.tail.update('next-window-2', true);
-  assert.equal(f.calls.filter(call => call.behavior === 'smooth').length, 2);
+  assert.equal(f.calls.filter(call => call.behavior === 'auto').length, 3);
 });
 
 test('reading earlier translations stops following until the user returns to the bottom', () => {
@@ -65,7 +64,7 @@ test('reading earlier translations stops following until the user returns to the
   f.scroll(1200);
   f.viewport.scrollHeight = 1800;
   f.tail.update('newer', true);
-  assert.equal(f.calls.at(-1).behavior, 'smooth');
+  assert.equal(f.calls.at(-1).behavior, 'auto');
 });
 
 test('upward wheel, keyboard, and scrollbar input interrupt a smooth scroll', () => {

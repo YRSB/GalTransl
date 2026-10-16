@@ -5,7 +5,7 @@ import { appendStreamEvents } from './timeline';
 // 事件流意外断开后的自动重连次数（退避 1s、2s、4s… 封顶 10s）
 const STREAM_MAX_RECONNECTS = 5;
 // 流事件批量进 state 的间隔（ms）
-const EVENT_FLUSH_MS = 50;
+const EVENT_FLUSH_MS = 100;
 
 type StreamHandlers = {
   /** 每条事件（close 除外）。返回 true 表示已自行处理（或丢弃），不进转录。 */

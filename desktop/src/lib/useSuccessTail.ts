@@ -59,7 +59,7 @@ export function createSuccessTail(viewport: HTMLElement) {
       // Removing old rows at the 100-card limit changes scrollTop through native
       // scroll anchoring. Read that position before handling queued scroll events.
       lastTop = viewport.scrollTop;
-      if (changed && following) scroll(viewport.scrollHeight, 'smooth');
+      if (changed && following) scroll(viewport.scrollHeight, 'auto');
     },
     jump() {
       following = true;

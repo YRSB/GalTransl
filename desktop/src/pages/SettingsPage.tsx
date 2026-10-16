@@ -306,7 +306,8 @@ export function SettingsPage() {
     setCustomBackgroundBusy(true);
     setCustomBackgroundError(null);
     try {
-      const next = await uploadCustomBackgroundImage(file, file.name);
+      const payload = await downsampleBackgroundImage(file);
+      const next = await uploadCustomBackgroundImage(payload, file.name);
       setCustomBackgroundImageDataUrl(next.imageDataUrl);
       setCustomBackgroundImageName(next.imageName);
       setCustomBackgroundOpacityInput(String(next.opacity));
@@ -705,3 +706,56 @@ export function SettingsPage() {
     </div>
   );
 }
+
+const CUSTOM_BACKGROUND_MAX_EDGE = 1920;
+const CUSTOM_BACKGROUND_JPEG_QUALITY = 0.85;
+
+async function downsampleBackgroundImage(file: File): Promise<Blob> {
+  if (file.type === 'image/svg+xml' || file.type === 'image/gif') {
+    return file;
+  }
+  return new Promise((resolve) => {
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      const width = img.naturalWidth || img.width;
+      const height = img.naturalHeight || img.height;
+      if (!width || !height) {
+        resolve(file);
+        return;
+      }
+      if (width <= CUSTOM_BACKGROUND_MAX_EDGE && height <= CUSTOM_BACKGROUND_MAX_EDGE && file.size <= 2 * 1024 * 1024) {
+        resolve(file);
+        return;
+      }
+      const scale = Math.min(1, CUSTOM_BACKGROUND_MAX_EDGE / Math.max(width, height));
+      const targetWidth = Math.max(1, Math.round(width * scale));
+      const targetHeight = Math.max(1, Math.round(height * scale));
+
+      const canvas = document.createElement('canvas');
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        resolve(file);
+        return;
+      }
+      ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+      const mime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+      canvas.toBlob(
+        (blob) => {
+          resolve(blob || file);
+        },
+        mime,
+        CUSTOM_BACKGROUND_JPEG_QUALITY,
+      );
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(file);
+    };
+    img.src = objectUrl;
+  });
+}
+

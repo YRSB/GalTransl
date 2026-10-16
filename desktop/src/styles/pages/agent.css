@@ -54,8 +54,8 @@
     radial-gradient(circle at 92% -18%, rgba(47, 111, 235, 0.16), transparent 46%),
     linear-gradient(90deg, #ffffff 0%, #ffffff 45%, rgba(247, 251, 255, 0.96) 100%),
     var(--color-surface);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
     inset 0 -1px 0 rgba(191, 208, 226, 0.45);
@@ -73,8 +73,8 @@
     radial-gradient(circle at 14% -12%, rgba(47, 111, 235, 0.1), transparent 42%),
     linear-gradient(180deg, #ffffff 0%, rgba(247, 251, 255, 0.96) 100%),
     var(--color-surface);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
     inset 0 -1px 0 rgba(191, 208, 226, 0.45);
@@ -1800,19 +1800,14 @@
 .agent-cache-ref__skeleton {
   height: 14px;
   border-radius: 5px;
-  background: linear-gradient(
-    90deg,
-    var(--agent-tile, rgba(16, 24, 40, 0.05)) 32%,
-    var(--agent-tile-strong, rgba(16, 24, 40, 0.1)) 50%,
-    var(--agent-tile, rgba(16, 24, 40, 0.05)) 68%
-  );
-  background-size: 220% 100%;
-  animation: agentCacheShimmer 1.3s ease-in-out infinite;
+  background: var(--agent-tile-strong, rgba(16, 24, 40, 0.08));
+  animation: agentCacheShimmer 1.4s ease-in-out infinite;
+  will-change: opacity;
 }
 
 @keyframes agentCacheShimmer {
-  from { background-position: 160% 0; }
-  to { background-position: -60% 0; }
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 0.95; }
 }
 
 /* 气泡里是只读展示：内嵌条目不填色（外框已经圈好了范围，条目再铺一层会叠出

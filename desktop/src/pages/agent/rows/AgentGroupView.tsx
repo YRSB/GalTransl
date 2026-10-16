@@ -343,7 +343,7 @@ function RetryRow({ item }: { item: ActivityItem }) {
 
   useEffect(() => {
     if (!active || !live) return undefined;
-    const timer = window.setInterval(() => setNow(Date.now()), 500);
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, [active, live]);
 

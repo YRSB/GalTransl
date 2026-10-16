@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 /**
  * GalTransl Desktop — Motion Design Tokens & Utilities
  *
@@ -68,15 +70,25 @@ export const FRESH_HIGHLIGHT_MS = 2200;
 
 // ── reduced-motion helper ──────────────────────────────
 
-/** The desktop app keeps its own animations independent of the OS setting. */
+/** Checks if the user or operating system requested reduced motion. */
 export function prefersReducedMotion(): boolean {
-  return false;
+  return typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
 }
 
 /**
- * React hook-shaped helper for motion code that should not follow the OS
- * reduced-motion preference in the desktop app.
+ * React hook observing the system reduced-motion preference.
  */
 export function usePrefersReducedMotion(): boolean {
-  return false;
+  const [reduced, setReduced] = useState(() => prefersReducedMotion());
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const onChange = () => setReduced(media.matches);
+    media.addEventListener?.('change', onChange);
+    return () => media.removeEventListener?.('change', onChange);
+  }, []);
+
+  return reduced;
 }
+

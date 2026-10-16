@@ -12,11 +12,21 @@ import { asArgs, clipText, formatDuration, toolMeta } from '../toolMeta';
     每行能展开看它自己的工具调用与报告：跑着的时候默认展开（要看它在干什么），跑完自动收起
     （报告在行摘要的下一层，点开就能读）；用户手动点过就听用户的。 */
 export function SubagentList({ runs }: { runs: SubagentRun[] }) {
+  const active = usePageActive();
   const uiLanguage = useUiLanguage();
   const running = runs.filter((run) => run.status === 'running').length;
   const done = runs.filter((run) => run.status === 'done').length;
   const failed = runs.filter((run) => run.status === 'failed').length;
   const stopped = runs.length - running - done - failed;
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (!active || running === 0) return undefined;
+    setNow(Date.now());
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [active, running > 0]);
+
   // 有在跑的就报"几个在跑"；全停了就按结局分账——中止/失败不算"已完成"
   let meta: string;
   if (running > 0) {
@@ -34,14 +44,13 @@ export function SubagentList({ runs }: { runs: SubagentRun[] }) {
         <span className="agent-subagents__meta">{meta}</span>
       </div>
       {runs.map((run) => (
-        <SubagentRow key={run.id} run={run} />
+        <SubagentRow key={run.id} run={run} now={now} />
       ))}
     </div>
   );
 }
 
-function SubagentRow({ run }: { run: SubagentRun }) {
-  const active = usePageActive();
+function SubagentRow({ run, now }: { run: SubagentRun; now: number }) {
   const uiLanguage = useUiLanguage();
   // **默认折叠**：一次派 16 个时是一行一个子代理，全铺开会把父行撑得很长；要看细节点开。
   // 折叠态不丢信息——"最新动作"就挂在行上（见 subagentLatest），在干什么一眼能扫到。
@@ -49,14 +58,6 @@ function SubagentRow({ run }: { run: SubagentRun }) {
   // 跑着的时候没有 duration_ms（那是完成时给的）：按起始时间 + 本地 tick 算。
   // 起始时间来自后端的 started_at，所以切页/刷新重建后不会归零；tick 保证没有新
   // 事件时秒数也在走（否则一行"5.0s"会一直不动，看着像卡住）。
-  const running = run.status === 'running';
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    if (!active || !running) return undefined;
-    setNow(Date.now());
-    const timer = window.setInterval(() => setNow(Date.now()), 500);
-    return () => window.clearInterval(timer);
-  }, [active, running]);
   const state = subagentState(run);
   const durationMs = run.durationMs ?? (run.startedAt ? now - run.startedAt : 0);
   const latest = subagentLatest(run);

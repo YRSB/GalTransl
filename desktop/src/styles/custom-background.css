@@ -473,3 +473,17 @@
   -webkit-backdrop-filter: none;
 }
 
+/* 彻底清除卡片与控制台的嵌套高斯模糊 */
+.app-layout--custom-background .project-cache-page .cache-card,
+.app-layout--custom-background .project-cache-page .cache-card--problem,
+.app-layout--custom-background .project-dictionary-page .dict-card,
+.app-layout--custom-background .agent-composer,
+:root[data-theme='dark'] .app-layout--custom-background .project-cache-page .cache-card,
+:root[data-theme='dark'] .app-layout--custom-background .project-cache-page .cache-card--problem,
+:root[data-theme='dark'] .app-layout--custom-background .project-dictionary-page .dict-card,
+:root[data-theme='dark'] .app-layout--custom-background .agent-composer {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+
