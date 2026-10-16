@@ -15,7 +15,7 @@
     radial-gradient(circle at 24% 16%, var(--bg-glow-primary), transparent 46%),
     radial-gradient(circle at 78% 82%, var(--bg-glow-success), transparent 44%),
     linear-gradient(180deg, var(--bg-gradient-top) 0%, var(--color-bg) 46%, var(--bg-gradient-bottom) 100%);
-  transition: opacity 220ms var(--ease-decel);
+  transition: opacity 140ms var(--ease-decel);
 }
 
 .startup-splash--leaving {
@@ -27,7 +27,11 @@
   animation-play-state: paused !important;
 }
 
-/* ── 背景光斑（缓慢漂移，纯装饰） ── */
+.startup-splash--leaving .startup-splash__glow {
+  display: none;
+}
+
+/* ── 背景光斑（静态装饰，避免持续 GPU 重绘） ── */
 
 .startup-splash__glow {
   position: absolute;
@@ -36,7 +40,6 @@
   border-radius: 50%;
   opacity: 0.55;
   pointer-events: none;
-  animation: startupGlowDrift 16s var(--ease-default) infinite alternate;
 }
 
 .startup-splash__glow--primary {
@@ -49,16 +52,6 @@
   right: -160px;
   bottom: -180px;
   background: radial-gradient(circle, var(--bg-glow-success), transparent 68%);
-  animation-delay: -6s;
-}
-
-@keyframes startupGlowDrift {
-  from {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  to {
-    transform: translate3d(36px, 26px, 0) scale(1.08);
-  }
 }
 
 /* ── 卡片 ── */
@@ -75,17 +68,17 @@
   border-radius: var(--radius-panel);
   background: var(--color-surface);
   box-shadow: var(--shadow-panel);
-  animation: startupCardIn 460ms var(--ease-decel) both;
+  animation: startupCardIn 240ms var(--ease-decel) both;
 }
 
 @keyframes startupCardIn {
   from {
     opacity: 0;
-    transform: translateY(14px) scale(0.985);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
@@ -114,7 +107,6 @@
   height: 44px;
   object-fit: contain;
   display: block;
-  animation: startupLogoBreath 3.2s var(--ease-default) infinite;
 }
 
 .startup-splash__logo-halo {
@@ -122,29 +114,6 @@
   inset: 0;
   border-radius: 50%;
   background: radial-gradient(circle, var(--color-primary-soft), transparent 72%);
-  animation: startupHaloPulse 3.2s var(--ease-default) infinite;
-}
-
-@keyframes startupLogoBreath {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.06);
-  }
-}
-
-@keyframes startupHaloPulse {
-  0%,
-  100% {
-    opacity: 0.55;
-    transform: scale(0.9);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.05);
-  }
 }
 
 .startup-splash__title {
@@ -185,6 +154,7 @@
 .startup-splash__spinner {
   flex-shrink: 0;
   animation: startupSpin 1.1s linear infinite;
+  will-change: transform;
 }
 
 @keyframes startupSpin {
@@ -259,17 +229,6 @@
 .startup-splash__step--active .startup-splash__step-marker {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 4px var(--color-primary-soft);
-  animation: startupStepPulse 1.4s var(--ease-default) infinite;
-}
-
-@keyframes startupStepPulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.45;
-  }
 }
 
 .startup-splash__step--done {
@@ -281,7 +240,7 @@
   background: var(--color-success);
 }
 
-/* ── 不确定进度条 ── */
+/* ── 确定进度条 ── */
 
 .startup-splash__bar {
   position: relative;
@@ -294,19 +253,10 @@
 .startup-splash__bar-fill {
   position: absolute;
   inset: 0 auto 0 0;
-  width: 42%;
+  height: 100%;
   border-radius: 999px;
   background: linear-gradient(90deg, var(--color-primary), var(--color-success));
-  animation: startupBarSlide 1.5s var(--ease-default) infinite;
-}
-
-@keyframes startupBarSlide {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(340%);
-  }
+  transition: width 350ms var(--ease-decel);
 }
 
 /* ── 失败态 ── */

@@ -46,16 +46,6 @@
   border-radius: var(--radius-panel);
   background: linear-gradient(135deg, #0f1a2e 0%, #162447 40%, #1a3060 100%);
   overflow: hidden;
-  opacity: 0;
-  transform: translateY(8px);
-  transition:
-    opacity 500ms var(--ease-decel),
-    transform 500ms var(--ease-decel);
-}
-
-.home-page--mounted .home-hero {
-  opacity: 1;
-  transform: translateY(0);
 }
 
 /* Decorative glow orb: 保持静态半透明光晕，停用持续脉冲动画以避免 GPU 渲染引擎持续唤醒 */
@@ -181,32 +171,6 @@
   min-height: 0;
 }
 
-/* ── Stagger entrance for grid children ── */
-.home-grid > * {
-  opacity: 0;
-  transform: translateY(10px);
-  transition:
-    opacity 450ms var(--ease-decel),
-    transform 450ms var(--ease-decel);
-}
-
-.home-page--mounted .home-grid > :nth-child(1) {
-  opacity: 1;
-  transform: translateY(0);
-  transition-delay: 80ms;
-}
-
-.home-page--mounted .home-grid > :nth-child(2) {
-  opacity: 1;
-  transform: translateY(0);
-  transition-delay: 160ms;
-}
-
-.home-page--mounted .home-grid > :nth-child(3) {
-  opacity: 1;
-  transform: translateY(0);
-  transition-delay: 240ms;
-}
 
 /* ═══════════════════════════════════════════════════════
    OPEN PROJECT — Left column

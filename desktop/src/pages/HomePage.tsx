@@ -224,7 +224,6 @@ export function HomePage({ onOpenProject }: HomePageProps) {
   const [refreshingJobs, setRefreshingJobs] = useState(false);
   const [stoppingJobId, setStoppingJobId] = useState<string | null>(null);
   const [shouldLoadJobProgress, setShouldLoadJobProgress] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [coreVersion, setCoreVersion] = useState<string | null>(null);
   const [latestVersion, setLatestVersion] = useState<string | null>(null);
   const [updateAvailable, setUpdateAvailable] = useState(false);
@@ -244,9 +243,6 @@ export function HomePage({ onOpenProject }: HomePageProps) {
   useEffect(() => {
     if (!active) return;
     setHistory(loadHistory(historyLimit));
-    // Stagger entrance animation
-    const t = requestAnimationFrame(() => setMounted(true));
-    return () => cancelAnimationFrame(t);
   }, [historyLimit, active]);
 
   useEffect(() => {
@@ -543,7 +539,7 @@ export function HomePage({ onOpenProject }: HomePageProps) {
   const failedJobsCount = useMemo(() => jobs.filter((job) => job.status === 'failed').length, [jobs]);
 
   return (
-    <div className={`home-page${mounted ? ' home-page--mounted' : ''}`}>
+    <div className="home-page">
       {/* ── Hero Brand Area ── */}
       <div className="home-hero">
         <div className="home-hero__brand">

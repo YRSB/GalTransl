@@ -117,7 +117,10 @@ export function StartupSplash({ phase, message, step, leaving, onRetry, onSkip }
             </ol>
 
             <div className="startup-splash__bar" aria-hidden="true">
-              <div className="startup-splash__bar-fill" />
+              <div
+                className="startup-splash__bar-fill"
+                style={{ width: `${Math.min(100, Math.max(25, (step / 3) * 100))}%` }}
+              />
             </div>
           </div>
         )}
