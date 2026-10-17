@@ -139,6 +139,11 @@ test('localized profile copies preserve model values and rename updates saved re
   api.setSelectedBackendProfile('project', 'original');
   const chineseCopy = await api.copyBackendProfile('original');
   assert.equal(chineseCopy.name, 'original-副本');
+  assert.deepEqual(Object.keys(JSON.parse(values.get('galtransl-backend-profiles'))), ['original', 'original-副本']);
+  await api.createBackendProfile('z-last', config);
+  const secondCopy = await api.copyBackendProfile('original');
+  assert.equal(secondCopy.name, 'original-副本-2');
+  assert.deepEqual(Object.keys(JSON.parse(values.get('galtransl-backend-profiles'))), ['original', 'original-副本-2', 'original-副本', 'z-last']);
   await i18n.setUiLanguage('en');
   try {
     const englishCopy = await api.copyBackendProfile('original');
@@ -155,6 +160,13 @@ test('localized profile copies preserve model values and rename updates saved re
     await assert.rejects(api.renameBackendProfile('renamed', ''), /Configuration name cannot be empty/);
     await assert.rejects(api.renameBackendProfile('renamed', englishCopy.name), /already exists/);
     await assert.rejects(api.copyBackendProfile('missing'), /Backend configuration not found/);
+    const quotaStorage = {
+      getItem: (key) => values.get(key) ?? null,
+      setItem: () => { throw new Error('QuotaExceededError'); },
+      removeItem: (key) => values.delete(key),
+    };
+    const quotaApi = loadApi({ native: false, storage: quotaStorage }).api;
+    await assert.rejects(quotaApi.copyBackendProfile('renamed'), /Failed to copy configuration/);
   } finally {
     await i18n.setUiLanguage('zh-CN');
   }

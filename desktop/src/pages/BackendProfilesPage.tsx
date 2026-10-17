@@ -242,8 +242,10 @@ export function BackendProfilesPage() {
 
   // 打开输入框后全选旧名，直接输入即可覆盖
   useEffect(() => {
-    if (renamingName) {
-      renameInputRef.current?.select();
+    if (renamingName && renameInputRef.current) {
+      renameInputRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      renameInputRef.current.focus();
+      renameInputRef.current.select();
     }
   }, [renamingName]);
 
@@ -418,7 +420,13 @@ export function BackendProfilesPage() {
                                 if (e.key === 'Enter') { e.preventDefault(); void commitRename(); }
                                 else if (e.key === 'Escape') { e.preventDefault(); cancelRename(); }
                               }}
-                              onBlur={cancelRename}
+                              onBlur={() => {
+                                if (renameDraft.trim() && renameDraft.trim() !== renamingName) {
+                                  void commitRename();
+                                } else {
+                                  cancelRename();
+                                }
+                              }}
                               aria-label={translate("settings:backendProfilesPage.renameConfigName", { name: entry.name })}
                               placeholder={translate("settings:backendProfilesPage.field_message_configName")}
                               autoFocus

@@ -1200,12 +1200,25 @@ export async function copyBackendProfile(sourceName: string) {
     throw new UiError(uiMessage('errors:profiles.nameRequired'));
   }
   const profiles = readBackendProfilesStorage();
-  if (!(from in profiles)) {
+  const lookupKey = from in profiles ? from : Object.keys(profiles).find((k) => k.trim() === from);
+  if (!lookupKey || !(lookupKey in profiles)) {
     throw new UiError(uiMessage('errors:profiles.notFound', { name: from }));
   }
-  const copyName = uniqueProfileName(resolveMessage(uiMessage('errors:profiles.copyName', { name: from })), profiles);
-  profiles[copyName] = cloneBackendProfile(profiles[from]);
-  writeBackendProfilesStorage(profiles);
+  const copyName = uniqueProfileName(resolveMessage(uiMessage('errors:profiles.copyName', { name: lookupKey })), profiles);
+  const copyData = cloneBackendProfile(profiles[lookupKey]);
+
+  // 插入在被复制配置的正下方，避免追加在列表末尾导致视口内看不到新副本
+  const nextProfiles: BackendProfilesMap = {};
+  for (const [key, val] of Object.entries(profiles)) {
+    nextProfiles[key] = val;
+    if (key === lookupKey) {
+      nextProfiles[copyName] = copyData;
+    }
+  }
+  if (!(copyName in nextProfiles)) {
+    nextProfiles[copyName] = copyData;
+  }
+  writeBackendProfilesStorage(nextProfiles);
   return { success: true, name: copyName };
 }
 
@@ -1458,7 +1471,7 @@ function writeBackendProfilesStorage(profiles: BackendProfilesMap) {
     localStorage.setItem(BACKEND_PROFILES_STORAGE_KEY, JSON.stringify(profiles));
     window.dispatchEvent(new CustomEvent(BACKEND_PROFILES_CHANGE_EVENT, { detail: Object.keys(profiles) }));
   } catch {
-    // ignore storage errors
+    throw new UiError(uiMessage('settings:backendProfilesPage.copyFailed'));
   }
 }
 

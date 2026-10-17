@@ -19,9 +19,18 @@ export function createTypeScriptLoader(globals = {}, mocks = {}) {
     modules.set(file, exports);
     const { outputText } = ts.transpileModule(readFileSync(file, 'utf8'), {
       compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true },
+      transformers: {
+        before: [(context) => {
+          const visit = (node) => ts.isMetaProperty(node)
+            ? ts.factory.createIdentifier('__importMeta')
+            : ts.visitEachChild(node, visit, context);
+          return (node) => ts.visitNode(node, visit);
+        }],
+      },
     });
     vm.runInNewContext(outputText, {
       exports, console, Error, Intl, Date, URL, AbortController, setTimeout, clearTimeout,
+      __importMeta: { env: { DEV: true } },
       ...globals,
       require(name) {
         if (Object.hasOwn(mocks, name)) return mocks[name];
