@@ -112,12 +112,13 @@ export function AgentPage() {
   }, []);
   const [projectOptions, setProjectOptions] = useState<string[]>(() => mergeProjects());
   useEffect(() => {
+    if (!active) return;
     const sync = () => setProjectOptions(mergeProjects());
     window.addEventListener(OPEN_PROJECTS_CHANGE_EVENT, sync);
-    // 进入页面时也同步一次：可能在别处刚打开/关闭过项目
+    // 进入/激活页面时也同步一次：可能在别处刚打开/关闭过项目
     sync();
     return () => window.removeEventListener(OPEN_PROJECTS_CHANGE_EVENT, sync);
-  }, [mergeProjects]);
+  }, [active, mergeProjects]);
 
   // 「模型设置」里的 Agent 默认后端：没自己绑定过的会话都跟随它。默认变化时只改
   // 这个"默认值"，绑定过的会话各自跟自己的配置走，互不影响。
@@ -882,11 +883,12 @@ export function AgentPage() {
         // 同步进翻译器的"已打开项目"列表（写盘 + 广播），让全局侧边栏
         // 和 Agent 自己的侧边栏分组都出现这个项目。
         addOpenProject(selected, cfg);
+        setProjectOptions(mergeProjects());
       }
     } catch {
       // User cancelled.
     }
-  }, []);
+  }, [mergeProjects]);
 
   /** 从 hero 的"已打开项目"列表里直接选中一个项目开始。幂等：addOpenProject
    *  保证该项目在翻译器已打开列表里。选中后保持空态等用户发消息创建新会话，
@@ -900,7 +902,8 @@ export function AgentPage() {
     setActiveSessionId('');
     saveActiveSessionId(dir, '');
     addOpenProject(dir, cfg);
-  }, []);
+    setProjectOptions(mergeProjects());
+  }, [mergeProjects]);
 
   /** 会话开始前从 composer 的 chip 换项目：与 chooseProject 同一套，但**不动已输入的指令**。
    *  这个动作发生在"项目已选、还没开聊"的窗口里，用户很可能已经把任务描述写好了——
@@ -915,7 +918,8 @@ export function AgentPage() {
     setProjectDir(dir);
     setConfigFileName(cfg);
     addOpenProject(dir, cfg);
-  }, [messageDraft]);
+    setProjectOptions(mergeProjects());
+  }, [messageDraft, mergeProjects]);
 
   /** 顶部 ＋：新建"未打开项目"的会话 —— 清空当前项目选择，主区回空态，
    *  让用户重新选/打开一个项目再发消息。侧边栏的其他项目会话分组保留显示，
@@ -1315,11 +1319,18 @@ export function AgentPage() {
     [uiLanguage, backendProfileName],
   );
 
+  const sidebarProjects = useMemo(() => {
+    if (!effectiveProject || projectOptions.includes(effectiveProject)) {
+      return projectOptions;
+    }
+    return [effectiveProject, ...projectOptions];
+  }, [effectiveProject, projectOptions]);
+
   return (
     <div className="agent-console">
       <AgentSessionSidebar
         sessionsByProject={sessionsByProject}
-        projects={projectOptions}
+        projects={sidebarProjects}
         activeProject={effectiveProject}
         activeSessionId={activeSessionId}
         collapsed={collapsedProjects}

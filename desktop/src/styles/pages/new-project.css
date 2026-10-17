@@ -346,6 +346,9 @@
   border-radius: var(--radius-card);
   background: var(--color-surface);
   box-shadow: var(--shadow-panel);
+  position: sticky;
+  bottom: var(--space-4);
+  z-index: 10;
 }
 
 /* ── Drop zone (Step 2) ── */

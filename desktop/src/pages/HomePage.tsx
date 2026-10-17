@@ -454,7 +454,11 @@ export function HomePage({ onOpenProject }: HomePageProps) {
     const config = basenamePath(filePath).trim() || 'config.yaml';
 
     if (!dir.trim()) return;
-    addProjectToHistory(dir, config);
+    try {
+      addProjectToHistory(dir, config);
+    } catch {
+      // ignore storage errors
+    }
     onOpenProject(dir, config);
     const projectId = encodeProjectDir(dir);
     navigate(`/project/${projectId}/translate`);

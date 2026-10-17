@@ -257,3 +257,72 @@ test('wizard finish unmounts wizard and navigates to target project', () => {
   const pathNode = renderer.root.findByProps({ id: 'current-path' });
   assert.match(pathNode.children[0], /^\/project\/[^/]+\/translate$/);
 });
+
+test('cached page re-syncs projects when becoming active and responds to project change events', () => {
+  const listeners = new Set();
+  const eventTarget = {
+    addEventListener: (type, fn) => listeners.add(fn),
+    removeEventListener: (type, fn) => listeners.delete(fn),
+    dispatchEvent: (e) => listeners.forEach((fn) => fn(e)),
+  };
+  let currentOpenProjects = ['projA'];
+  function AgentLikePage() {
+    const active = usePageActive();
+    const [projects, setProjects] = useState(['projA']);
+    useEffect(() => {
+      if (!active) return;
+      const sync = () => setProjects([...currentOpenProjects]);
+      eventTarget.addEventListener('change', sync);
+      sync();
+      return () => eventTarget.removeEventListener('change', sync);
+    }, [active]);
+    return h('div', { id: 'agent-page', active, count: projects.length, projects });
+  }
+
+  let navigate;
+  function App() {
+    const location = useLocation();
+    navigate = useNavigate();
+    return h(CachedRoutes, { location, currentPath: location.pathname, leavingPath: null, limit: 5, isAvailable: () => true },
+      h(Route, { path: '/agent', element: h(AgentLikePage) }),
+      h(Route, { path: '/translate', element: h('div', { id: 'translate-page' }) }),
+    );
+  }
+
+  let renderer;
+  act(() => {
+    renderer = create(h(MemoryRouter, { initialEntries: ['/agent'] }, h(App)));
+  });
+
+  const node1 = renderer.root.findByProps({ id: 'agent-page' });
+  assert.equal(node1.props.count, 1);
+  assert.deepEqual(node1.props.projects, ['projA']);
+
+  // Navigate away to /translate (Agent stays cached in background)
+  act(() => {
+    navigate('/translate');
+  });
+
+  // A new project is opened elsewhere in the app
+  currentOpenProjects = ['projB', 'projA'];
+
+  // Navigate back to /agent (becomes active)
+  act(() => {
+    navigate('/agent');
+  });
+
+  const node2 = renderer.root.findByProps({ id: 'agent-page' });
+  assert.equal(node2.props.count, 2);
+  assert.deepEqual(node2.props.projects, ['projB', 'projA']);
+
+  // An external event updates projects while agent is active
+  currentOpenProjects = ['projC', 'projB', 'projA'];
+  act(() => {
+    eventTarget.dispatchEvent({ detail: currentOpenProjects });
+  });
+
+  const node3 = renderer.root.findByProps({ id: 'agent-page' });
+  assert.equal(node3.props.count, 3);
+  assert.deepEqual(node3.props.projects, ['projC', 'projB', 'projA']);
+});
+

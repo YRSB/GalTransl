@@ -1397,7 +1397,10 @@ export function addOpenProject(projectDir: string, configFileName = 'config.yaml
   if (!projectDir) return;
   saveConfigFileName(projectDir, configFileName || 'config.yaml');
   const prev = loadOpenProjects();
-  if (prev.includes(projectDir)) return;
+  if (prev.includes(projectDir)) {
+    window.dispatchEvent(new CustomEvent(OPEN_PROJECTS_CHANGE_EVENT, { detail: prev }));
+    return;
+  }
   saveOpenProjects([projectDir, ...prev]);
 }
 
